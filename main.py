@@ -1,0 +1,97 @@
+import os
+import uuid
+from dotenv import load_dotenv
+from fastapi import FastAPI
+from pydantic import BaseModel
+from fastapi.middleware.cors import CORSMiddleware
+
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_community.chat_message_histories import ChatMessageHistory
+from langchain_core.runnables.history import RunnableWithMessageHistory
+from langchain_core.prompts import ChatPromptTemplate
+
+import random
+
+# DEMO_RESPONSES = [
+#     "Great job! Keep going, you're doing amazing 💪",
+#     "Try increasing your protein intake today!",
+#     "Let's focus on consistency — even 10 mins workout matters.",
+#     "Drink plenty of water and stay hydrated!",
+#     "Nice progress! Want a quick 5-minute workout plan?",
+#     "Remember: Fitness is a journey. You're improving every day!"
+# ]
+
+# Load environment variables
+load_dotenv()
+
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+
+# Initialize model
+llm = ChatGoogleGenerativeAI(
+    model="gemini-2.5-flash-lite",
+    google_api_key=GOOGLE_API_KEY,
+    temperature=0.7,
+    max_output_tokens=128
+)
+
+# Prompt
+prompt = ChatPromptTemplate.from_messages([
+    ("system", "You are a helpful AI fitness coach."),
+    ("placeholder", "{history}"),
+    ("human", "{input}")
+])
+
+chain = prompt | llm
+
+# Memory storage
+store = {}
+
+def get_session_history(session_id: str):
+    if session_id not in store:
+        store[session_id] = ChatMessageHistory()
+    return store[session_id]
+
+conversation = RunnableWithMessageHistory(
+    chain,
+    get_session_history,
+    input_messages_key="input",
+    history_messages_key="history"
+)
+
+# FastAPI app
+app = FastAPI()
+
+# CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Models
+class ChatRequest(BaseModel):
+    session_id: str
+    message: str
+
+# ⭐ New Chat Route — Generate Shareable Link
+@app.get("/new-chat")
+def create_new_chat():
+    session_id = str(uuid.uuid4())
+    link = f"https://your-frontend-domain.com/chat/{session_id}"  # change after deploy
+    return {"session_id": session_id, "shareable_link": link}
+
+# Chat API
+@app.post("/chat")
+def chat_api(body: ChatRequest):
+    # reply = random.choice(DEMO_RESPONSES)
+    # return {
+    #     "reply": reply,
+    #     "session_id": body.session_id,
+    #     "debug": "This is a demo mock response. LLM is disabled."
+    # }
+    response = conversation.invoke(
+        {"input": body.message},
+        config={"configurable": {"session_id": body.session_id}}
+    )
+    return {"reply": response.content}
