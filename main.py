@@ -11,6 +11,7 @@ from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_core.prompts import ChatPromptTemplate
 
 import random
+load_dotenv()
 
 # DEMO_RESPONSES = [
 #     "**Great job**! Keep going, you're/n doing amazing 💪",
@@ -22,9 +23,12 @@ import random
 # ]
 
 # Load environment variables
-load_dotenv()
+
 
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+if not GOOGLE_API_KEY:
+    raise ValueError("GOOGLE_API_KEY not found in environment variables")
+
 
 # Initialize model
 llm = ChatGoogleGenerativeAI(
@@ -89,6 +93,11 @@ def create_new_chat():
     #     "session_id": body.session_id,
     #     "debug": "This is a demo mock response. LLM is disabled."
     # }
+    
+@app.get("/")
+def health():
+    return {"status": "FitGuru backend running 🚀"}
+
     
 @app.post("/chat")
 async def chat_api(body: ChatRequest):
