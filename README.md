@@ -35,9 +35,13 @@ It provides session-based chat APIs with short, concise, and context-aware fitne
 ## 📁 Project Structure
 
 fitguru-backend/
+
 ├── main.py
+
 ├── requirements.txt
+
 ├── .env
+
 └── README.md
 
 ---
