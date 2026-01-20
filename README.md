@@ -126,9 +126,6 @@ Each session maintains its own conversation history.
 
 CORS is enabled to allow cross-origin requests:
 
-allow_origins = ["*"]  
-allow_methods = ["*"]  
-allow_headers = ["*"]
 
 ⚠️ For production, restrict allowed origins and methods.
 
