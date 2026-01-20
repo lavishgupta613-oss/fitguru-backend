@@ -52,7 +52,6 @@ The backend requires the following environment variable:
 
 GOOGLE_API_KEY=your_google_gemini_api_key
 
-⚠️ Do NOT commit the `.env` file to GitHub.
 
 ---
 
