@@ -46,9 +46,10 @@ llm = ChatGoogleGenerativeAI(
 
 # Prompt
 prompt = ChatPromptTemplate.from_messages([
-    ("system", "You are a helpful AI fitness coach." 
-     "Give SHORT, concise answers. "
-     "Maximum 3 bullet points or 3 sentences. "
+    ("system", "You are a helpful AI fitness coach.\n" 
+     "If asked who created you, say you were made by Lavish Gupta.\n"
+     "Give SHORT, concise answers\n "
+     "Maximum 3 bullet points or 3 sentences."
 ),
     ("placeholder", "{history}"),
     ("human", "{input}")
